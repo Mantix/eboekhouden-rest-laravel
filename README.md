@@ -1,148 +1,122 @@
-# Projectstructuur Laravel Package
+# e-Boekhouden REST API Laravel Integration
 
-Hier is de volledige projectstructuur voor de Laravel integratie van de e-Boekhouden REST API:
+Laravel integratie voor de [e-Boekhouden.nl REST API](https://github.com/mantix/eboekhouden-rest-api).
 
-```
-eboekhouden-rest-laravel/
-├── config/
-│   └── eboekhouden.php             # Configuratiebestand
-├── src/
-│   ├── EBoekhoudenServiceProvider.php   # Service provider voor Laravel
-│   └── Facades/
-│       └── EBoekhouden.php         # Laravel Facade
-├── tests/
-│   ├── Feature/
-│   │   └── EBoekhoudenTest.php     # Feature tests
-│   ├── Unit/
-│   │   └── ... (toekomstige unit tests)
-│   └── TestCase.php                # Base TestCase klasse
-├── .gitignore
-├── LICENSE
-├── composer.json
-├── phpunit.xml
-└── README.md
-```
+## Installatie
 
-## Installatie-instructies voor Windows
+Je kunt dit package installeren via Composer:
 
-1. Maak een nieuw project aan:
-
-```
-md eboekhouden-rest-laravel
-cd eboekhouden-rest-laravel
-```
-
-2. Initialiseer Git:
-
-```
-git init
-```
-
-3. Maak de projectstructuur aan:
-
-```
-md config
-md src
-md src\Facades
-md tests
-md tests\Feature
-md tests\Unit
-```
-
-4. Maak een `.gitignore` bestand aan:
-   - Open Notepad (of een andere teksteditor)
-   - Maak een nieuw bestand
-   - Voeg de onderstaande inhoud toe
-   - Sla het op als `.gitignore` in de hoofdmap van je project
-   - Zorg dat je "Alle bestanden" selecteert als bestandstype, niet "Tekstdocument"
-
-```
-/vendor/
-/composer.lock
-/.phpunit.result.cache
-/.phpunit.cache/
-/.idea/
-/.vscode/
-/node_modules/
-```
-
-5. Kopieer de eerder aangemaakt bestanden naar de juiste mappen:
-   - `eboekhouden.php` naar `config/`
-   - `EBoekhoudenServiceProvider.php` naar `src/`
-   - `EBoekhouden.php` naar `src/Facades/`
-   - `EBoekhoudenTest.php` naar `tests/Feature/`
-   - `TestCase.php` naar `tests/`
-   - `composer.json`, `phpunit.xml`, `LICENSE` en `README.md` naar de hoofdmap
-
-6. Installeer Composer als je dat nog niet hebt gedaan:
-   - Download de Composer installer van https://getcomposer.org/download/
-   - Voer de installer uit en volg de instructies
-   - Controleer de installatie door `composer --version` in een command prompt te typen
-
-7. Installeer de afhankelijkheden:
-
-```
-composer install
-```
-
-8. Commit de bestanden:
-
-```
-git add .
-git commit -m "Initial commit"
-```
-
-9. (Optioneel) Publiceer op Github of andere Git hosting service:
-    - Maak een repository aan op GitHub
-    - Voer de volgende commando's uit:
-
-```
-git remote add origin https://github.com/mantix/eboekhouden-rest-laravel.git
-git push -u origin main
-```
-
-10. (Optioneel) Publiceer op Packagist om het via Composer beschikbaar te maken:
-    - Maak een account aan op Packagist.org
-    - Voeg je Github repository toe
-    - Publiceer je package
-
-## Gebruik in een Laravel project
-
-Om dit package in een Laravel project te gebruiken, installeer je het via Composer:
-
-```
+```bash
 composer require mantix/eboekhouden-rest-laravel
 ```
 
-Stel vervolgens je API token in in je `.env` bestand:
+## Laravel Compatibiliteit
+
+Dit package ondersteunt Laravel versies 10, 11 en 12.
+
+## Configuratie
+
+Je kunt direct beginnen met alleen het instellen van je API token en source identifier in je `.env` bestand:
 
 ```
 EBOEKHOUDEN_API_TOKEN=jouw_api_token
 EBOEKHOUDEN_SOURCE=JouwApp
 ```
 
-Optioneel kun je het configuratiebestand publiceren als je meer instellingen wilt aanpassen:
+Optioneel kun je het configuratiebestand publiceren als je meer controle wilt over de instellingen:
 
-```
+```bash
 php artisan vendor:publish --tag=eboekhouden-config
 ```
 
-Nu kun je de e-Boekhouden API gebruiken via de Facade:
+Dit maakt een `config/eboekhouden.php` bestand aan in je project dat je kunt aanpassen.
+
+## Basis gebruik
+
+Je kunt de e-Boekhouden REST API gebruiken via de `EBoekhouden` facade:
 
 ```php
 use Mantix\EBoekhoudenRestLaravel\Facades\EBoekhouden;
 
+// Relaties ophalen
 $relations = EBoekhouden::getRelations();
+
+// Een nieuwe relatie aanmaken
+$newRelation = EBoekhouden::createRelation([
+    'name' => 'Mijn nieuwe klant',
+    'address' => 'Voorbeeldstraat 123',
+    'postalCode' => '1234 AB',
+    'city' => 'Amsterdam',
+]);
 ```
 
-Of via dependency injection:
+## Dependency Injection
+
+Je kunt ook dependency injection gebruiken:
 
 ```php
 use Mantix\EBoekhoudenRestApi\Client;
 
-public function index(Client $eboekhouden)
+class RelationController
 {
-    $relations = $eboekhouden->getRelations();
-    // ...
+    public function index(Client $eboekhouden)
+    {
+        return $eboekhouden->getRelations();
+    }
 }
 ```
+
+## Filter Gebruik
+
+De Filter class uit het basis package werkt ook hier:
+
+```php
+use Mantix\EBoekhoudenRestApi\Filter;
+use Mantix\EBoekhoudenRestLaravel\Facades\EBoekhouden;
+
+// Zoek relaties met "Bedrijf" in de naam
+$relations = EBoekhouden::getRelations([
+    'name' => Filter::like('%Bedrijf%'),
+]);
+```
+
+## Sessie Beheer
+
+Sessie beheer gebeurt automatisch. De client zal een sessie aanmaken wanneer nodig en deze hergebruiken voor volgende aanroepen. In een typische Laravel applicatie gaat dit achter de schermen. Je kunt wel expliciet de sessie beëindigen als je dat wilt:
+
+```php
+EBoekhouden::endSession();
+```
+
+## Foutafhandeling
+
+Fouten van de API worden als `EBoekhoudenException` geworpen, die je kunt afhandelen met try/catch:
+
+```php
+use Mantix\EBoekhoudenRestApi\EBoekhoudenException;
+use Mantix\EBoekhoudenRestLaravel\Facades\EBoekhouden;
+
+try {
+    $relations = EBoekhouden::getRelations();
+} catch (EBoekhoudenException $e) {
+    Log::error('e-Boekhouden API fout: ' . $e->getMessage());
+    Log::error('API foutcode: ' . $e->getErrorCode());
+    
+    // Volledige foutrespons
+    Log::debug($e->getErrorResponse());
+}
+```
+
+## Beschikbare Methodes
+
+Alle methodes van de onderliggende client zijn beschikbaar via de facade. Zie de [documentatie van mantix/eboekhouden-rest-api](https://github.com/mantix/eboekhouden-rest-api) voor een volledige lijst.
+
+## Tests uitvoeren
+
+```bash
+composer test
+```
+
+## License
+
+MIT
