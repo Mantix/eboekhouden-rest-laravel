@@ -1,0 +1,50 @@
+{
+    "name": "mantix/eboekhouden-rest-laravel",
+    "description": "Laravel integration for e-Boekhouden.nl REST API",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mantix",
+            "email": "info@mantix.nl"
+        }
+    ],
+    "require": {
+        "php": "^8.0|^8.1|^8.2|^8.3",
+        "mantix/eboekhouden-rest-api": "^1.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/contracts": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^9.5|^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mantix\\EBoekhoudenRestLaravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "files": [
+            "helpers.php"
+        ],
+        "psr-4": {
+            "Mantix\\EBoekhoudenRestLaravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mantix\\EBoekhoudenRestLaravel\\EBoekhoudenServiceProvider"
+            ],
+            "aliases": {
+                "EBoekhouden": "Mantix\\EBoekhoudenRestLaravel\\Facades\\EBoekhouden"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
